@@ -1,0 +1,29 @@
+.btnContainer {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tabBtn {
+  padding: 0.5rem 2rem;
+  cursor: pointer;
+  border-radius: 0.25rem;
+}
+
+.tabBtn:focus {
+  outline: 2px solid orangered;
+  outline-offset: 4px;
+}
+
+.activeBtn {
+  background-color: green;
+  color: #fff;
+  font-weight: 700;
+}
+
+.hidden {
+  display: none;
+}
+
+.panelConatiner {
+}

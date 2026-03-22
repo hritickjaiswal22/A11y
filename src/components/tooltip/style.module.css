@@ -1,0 +1,18 @@
+.container {
+  position: relative;
+}
+
+.titleContainer {
+  position: absolute;
+  left: 50%;
+  top: calc(100%);
+  transform: translateX(-50%);
+  padding-top: 8px;
+}
+
+.titleWrapper {
+  padding: 0.25rem;
+  background-color: #afafaf;
+  color: #fff;
+  border-radius: 0.25rem;
+}

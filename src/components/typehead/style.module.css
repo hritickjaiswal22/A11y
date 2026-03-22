@@ -1,0 +1,41 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+}
+
+.label {
+  width: 100%;
+}
+
+.input {
+  padding: 0.5rem;
+}
+
+.list {
+  position: absolute;
+  list-style: none;
+  background-color: lightgray;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 240px;
+  width: 100%;
+  transform: translateY(80px);
+}
+
+.listItem {
+  padding: 0.5rem 0.25rem;
+  cursor: pointer;
+  color: #000;
+}
+
+.listItem.active {
+  background-color: springgreen;
+}
+
+.listItem:hover {
+  /* background-color: springgreen; */
+  background-color: #a5e356;
+}
