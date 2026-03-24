@@ -5,7 +5,6 @@ import styles from "./style.module.css";
 
 interface ToastContextType {
   toasts: ToastType[];
-  setToasts: Dispatch<SetStateAction<ToastType[]>>;
   addToast: (message: string, type: ToastMessageType) => void;
 }
 
@@ -69,8 +68,6 @@ function ToastComponent({
     return () => clearInterval(timerId.current);
   }, []);
 
-  console.log(timeTillDelete);
-
   return (
     <div
       className={styles.toast}
@@ -127,7 +124,6 @@ export function ToastContextProvider({
     <ToastContext.Provider
       value={{
         toasts,
-        setToasts,
         addToast,
       }}
     >
