@@ -1,0 +1,15 @@
+.toastContainer {
+  padding: 1rem;
+  position: fixed;
+  top: 0;
+  right: 0;
+}
+
+.toast {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  color: #fff;
+  display: flex;
+  gap: 0.25rem;
+}

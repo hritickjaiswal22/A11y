@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./App.css";
 
 // import Modal from "./components/modal";
@@ -5,7 +6,8 @@ import "./App.css";
 // import Typehead, { type OptionType } from "./components/typehead";
 // import Tabs, { PanelList, Tab, TabList, TabPanel } from "./components/tabs";
 // import { useState } from "react";
-import Tooltip from "./components/tooltip";
+// import Tooltip from "./components/tooltip";
+import useToast, { ToastContextProvider } from "./components/toast/useToast";
 
 // const top100Films = [
 //   {
@@ -263,19 +265,53 @@ import Tooltip from "./components/tooltip";
 //   );
 // }
 
+// function App() {
+//   return (
+//     <div
+//       style={{
+//         padding: "4rem",
+//         display: "flex",
+//         justifyContent: "center",
+//       }}
+//     >
+//       <Tooltip title="Button">
+//         <span>Hover me</span>
+//       </Tooltip>
+//     </div>
+//   );
+// }
+
 function App() {
   return (
-    <div
-      style={{
-        padding: "4rem",
-        display: "flex",
-        justifyContent: "center",
-      }}
-    >
-      <Tooltip title="Button">
-        <span>Hover me</span>
-      </Tooltip>
-    </div>
+    <ToastContextProvider>
+      <TodosContainer />
+    </ToastContextProvider>
+  );
+}
+
+function TodosContainer() {
+  const context = useToast();
+  const [toastCount, setToastCount] = useState(0);
+
+  return (
+    <>
+      <button
+        onClick={() => {
+          context.addToast(
+            `Toast ${toastCount}`,
+            toastCount % 3 === 0
+              ? "error"
+              : toastCount % 3 === 1
+                ? "success"
+                : "info",
+          );
+
+          setToastCount((prev) => prev + 1);
+        }}
+      >
+        Add
+      </button>
+    </>
   );
 }
 
