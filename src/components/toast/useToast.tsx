@@ -79,10 +79,13 @@ function ToastComponent({
       }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onFocus={onMouseEnter}
+      onBlur={onMouseLeave}
     >
       <p className={styles.toastText}>{message}</p>
 
       <button
+        aria-label="Dismiss notification"
         onClick={() => {
           clearInterval(timerId.current);
           removeToast(id);
@@ -129,7 +132,12 @@ export function ToastContextProvider({
       }}
     >
       {children}
-      <div className={styles.toastContainer}>
+      <div
+        className={styles.toastContainer}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {toasts.map((toast) => (
           <ToastComponent
             key={toast.id}
