@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import styles from "./style.module.css";
@@ -7,7 +7,6 @@ interface ToastContextType {
   toasts: ToastType[];
   setToasts: Dispatch<SetStateAction<ToastType[]>>;
   addToast: (message: string, type: ToastMessageType) => void;
-  removeToast: (id: number) => void;
 }
 
 type ToastMessageType = "success" | "error" | "info";
@@ -23,8 +22,8 @@ interface ToastContextProviderPropsTypes {
 }
 
 interface ToastComponentPropsType extends ToastType {
-  addTimer: (id: number) => void;
-  removeTimer: (id: number) => void;
+  addToast: (message: string, type: ToastMessageType) => void;
+  removeToast: (id: number) => void;
 }
 
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -35,10 +34,10 @@ function ToastComponent({
   id,
   message,
   type,
-  addTimer,
-  removeTimer,
+  removeToast,
 }: ToastComponentPropsType) {
-  const { removeToast } = useToast();
+  const [timeTillDelete, setTimeTillDelete] = useState(ACTIVE_INTERVAL);
+  const timerId = useRef(-1);
 
   function getBgColor() {
     if (type === "success") return "green";
@@ -46,18 +45,51 @@ function ToastComponent({
     return "blue";
   }
 
+  function onMouseEnter() {
+    clearInterval(timerId.current);
+  }
+
+  function onMouseLeave() {
+    timerId.current = setInterval(() => {
+      setTimeTillDelete((prev) => prev - 1);
+    }, 1000);
+  }
+
+  useEffect(() => {
+    if (timeTillDelete <= 0) {
+      removeToast(id);
+    }
+  }, [timeTillDelete]);
+
+  useEffect(() => {
+    timerId.current = setInterval(() => {
+      setTimeTillDelete((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timerId.current);
+  }, []);
+
+  console.log(timeTillDelete);
+
   return (
     <div
       className={styles.toast}
       style={{
         backgroundColor: getBgColor(),
       }}
-      onMouseEnter={() => removeTimer(id)}
-      onMouseLeave={() => addTimer(id)}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <p className={styles.toastText}>{message}</p>
 
-      <button onClick={() => removeToast(id)}>X</button>
+      <button
+        onClick={() => {
+          clearInterval(timerId.current);
+          removeToast(id);
+        }}
+      >
+        X
+      </button>
     </div>
   );
 }
@@ -67,21 +99,11 @@ export function ToastContextProvider({
 }: ToastContextProviderPropsTypes) {
   const [toasts, setToasts] = useState<ToastType[]>([]);
   const [toastId, setToastId] = useState(0);
-  const [idMap, setIdMap] = useState<Map<number, number>>(() => new Map());
 
   function addToast(message: string, type: ToastMessageType) {
+    if (toasts.length >= MAX_TOASTS) return;
+
     const id = toastId;
-
-    const timerid = setTimeout(() => {
-      setToasts((prev) => prev.filter((obj) => obj.id !== id));
-      setIdMap((prev) => {
-        const map = structuredClone(prev);
-
-        map.delete(id);
-
-        return map;
-      });
-    }, ACTIVE_INTERVAL * 1000);
 
     setToastId((prev) => prev + 1);
     setToasts((prev) => [
@@ -92,92 +114,11 @@ export function ToastContextProvider({
         type,
       },
     ]);
-    setIdMap((prev) => {
-      const map = structuredClone(prev);
-
-      map.set(id, timerid);
-
-      return map;
-    });
   }
 
   function removeToast(id: number) {
-    const timerid = idMap.get(id);
-
-    clearTimeout(timerid);
-
     setToasts((prev) => prev.filter((obj) => obj.id !== id));
-    setIdMap((prev) => {
-      const map = structuredClone(prev);
-
-      map.delete(id);
-
-      return map;
-    });
   }
-
-  function addTimer(id: number) {
-    const timerid = setTimeout(() => {
-      setToasts((prev) => prev.filter((obj) => obj.id !== id));
-      setIdMap((prev) => {
-        const map = structuredClone(prev);
-
-        map.delete(id);
-
-        return map;
-      });
-    }, ACTIVE_INTERVAL * 1000);
-
-    setIdMap((prev) => {
-      const map = structuredClone(prev);
-
-      map.set(id, timerid);
-
-      return map;
-    });
-  }
-
-  function removeTimer(id: number) {
-    clearTimeout(idMap.get(id));
-    setIdMap((prev) => {
-      const map = structuredClone(prev);
-
-      map.delete(id);
-
-      return map;
-    });
-  }
-
-  // useEffect(() => {
-  //   const activeToasts = toasts.slice(0, MAX_TOASTS);
-  //   const newEntries: [number, number][] = [];
-
-  //   for (const activeToast of activeToasts) {
-  //     if (!idMap.has(activeToast.id)) {
-  //       const timerid = setTimeout(() => {
-  //         setToasts((prev) => prev.filter((obj) => obj.id !== activeToast.id));
-  //         setIdMap((prev) => {
-  //           const map = structuredClone(prev);
-
-  //           map.delete(activeToast.id);
-
-  //           return map;
-  //         });
-  //       }, ACTIVE_INTERVAL * 1000);
-
-  //       newEntries.push([activeToast.id, timerid]);
-  //     }
-  //   }
-  //   setIdMap((prev) => {
-  //     const map = structuredClone(prev);
-
-  //     newEntries.forEach(([id, timerid]) => {
-  //       map.set(id, timerid);
-  //     });
-
-  //     return map;
-  //   });
-  // }, [toasts]);
 
   return (
     <ToastContext.Provider
@@ -185,7 +126,6 @@ export function ToastContextProvider({
         toasts,
         setToasts,
         addToast,
-        removeToast,
       }}
     >
       {children}
@@ -194,8 +134,8 @@ export function ToastContextProvider({
           <ToastComponent
             key={toast.id}
             {...toast}
-            addTimer={addTimer}
-            removeTimer={removeTimer}
+            addToast={addToast}
+            removeToast={removeToast}
           />
         ))}
       </div>
